@@ -17,11 +17,12 @@
 }(this, function(_, Backbone) {
 
   var global = this;
+  var slice = [].slice;
 
-  var App = function (options) {
-    if (!(this instanceof App)) return new app(options);
-    this.options = options || {};
+  var App = function (plugin) {
+    if (!(this instanceof App)) return new App(plugin);
     this.plugins = [];
+    if (plugin) this.use(plugin);
   }
 
   _.extend(App.prototype, Backbone.Events);
@@ -56,11 +57,15 @@
       var plugin = plugins[i++];
       var arr = slice.call(args);
 
+      // done
       if (!plugin) {
+        ctx.trigger('ready');
         return done && done.apply(null, [null].concat(args));
       }
 
-      wrap(fn, next).apply(ctx, arr);
+      // Run the plugin
+      plugin.apply(ctx, args.concat(next));
+      
     }
 
     next();
